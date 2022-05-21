@@ -9,6 +9,7 @@ import string
 
 # We assume that the finite field order q != 1 (mod 27) and
 # b is a quadratic and cubic residue in Fq. Without loss of generality, we can pick b = 1.
+# Also, we need a cubic (resp. quadratic) non-residue (resp. residue) c in Fq.
 # Parameters for the BLS12-377 curve E1: y^2 = x^3 + 1:
 u = 9586122913090633729
 r = u^4 - u^2 + 1
@@ -22,7 +23,8 @@ Fq = GF(q)
 w = Fq(1).nth_root(3)
 assert(w != 1)   # w is a primitive 3rd root of unity
 w2 = w^2
- 
+c = w	# sqrt(c) = w2
+
 
 ##############################################################################
 
@@ -62,8 +64,8 @@ def hPrime(num0,num1,num2,den, t1,t2):
 	
 
 # [1, Lemma 1, Appendix] states that T is given in the affine space A^5(y0,y1,y2,t1,t2) by the two equations       
-# y1^2 - 1 = b*(y0^2 - 1)*t1^3, 
-# y2^2 - 1 = b^2*(y0^2 - 1)*t2^3,
+# y1^2 - 1 = c*(y0^2 - 1)*t1^3, 
+# y2^2 - 1 = c^2*(y0^2 - 1)*t2^3,
 # where tj := xj/x0.
 # The threefold T can be regarded as an elliptic curve in A^3(y0,y1,y2) over the function field F := Fq(s1,s2),
 # where sj := tj^3. 
@@ -77,11 +79,14 @@ def phi(t1,t2):
 	global s1s2
 	s1s2 = s1*s2
 	
-	a20 = w2*s1s1
-	a11 = 2*s1s2
-	a10 = 2*w*s1
-	a02 = w*s2s2
-	a01 = 2*w2*s2
+	c2 = c^2
+	c3 = c*c2
+	c4 = c2^2
+	a20 = c2*s1s1
+	a11 = 2*c3*s1s2
+	a10 = 2*c*s1
+	a02 = c4*s2s2
+	a01 = 2*c2*s2
 	
 	num0 = a20 - a11 + a10 + a02 + a01 - 3
 	num1 = -3*a20 + a11 + a10 + a02 - a01 + 1
