@@ -118,6 +118,7 @@ def phi(t1,t2):
 	a02 = b4*s2s2
 	a01 = 2*b2*s2
 	
+	# yi = numi/den
 	num0 = sb*(a20 - a11 + a10 + a02 + a01 - 3)
 	num1 = sb*(-3*a20 + a11 + a10 + a02 - a01 + 1)
 	num2 = sb*(a20 + a11 - a10 - 3*a02 + a01 + 1)
