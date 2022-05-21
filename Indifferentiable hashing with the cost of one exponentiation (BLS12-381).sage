@@ -34,8 +34,8 @@ c2 = c1^2
 
 
 # In [1, Section 2] we deal with a Calabi-Yau threefold defined as 
-# the quotient T := E_b x E_b' x E_b'' / [w] x [w] x [w],
-# where E_b', E_b'' are the cubic twists of Eb
+# the quotient T := Eb x Eb' x Eb'' / [w] x [w] x [w],
+# where Eb', Eb'' are the cubic twists of Eb
 # and [w](x, y) -> (wx, y) is an automorphism of order 3 on Eb, Eb', and Eb''. 
 # Auxiliary map h': T(Fq) -> Eb(Fq):
 def hPrime(num0,num1,num2,den, t1,t2):
@@ -94,8 +94,8 @@ def hPrime(num0,num1,num2,den, t1,t2):
 	
 
 # [1, Lemma 1] states that T is given in the affine space A^5(y0,y1,y2,t1,t2) by the two equations       
-# y1^2 - b = b*(y0^2 - b)*t_1^3, 
-# y2^2 - b = b^2*(y0^2 - b)*t_2^3,
+# y1^2 - b = b*(y0^2 - b)*t1^3, 
+# y2^2 - b = b^2*(y0^2 - b)*t2^3,
 # where tj := xj/x0.
 # The threefold T can be regarded as an elliptic curve in A^3(y0,y1,y2) over the function field F := Fq(s1,s2),
 # where sj := tj^3. 
