@@ -131,7 +131,10 @@ def h(t1,t2):
 	num0,num1,num2,den = phi(t1,t2)
 	X,Y,Z = hPrime(num0,num1,num2,den, t1,t2)
 	if s1s2 == 0:
-		X = 0; Y = sb; Z = 1   
+		X = 4; 
+		Y = 0xa989badd40d6212b33cffc3f3763e9bc760f988c9926b26da9dd85e928483446346b8ed00e1de5d5ea93e354abe706c; 
+		Z = 1   
+	# The point is taken from https://hackmd.io/@benjaminion/bls12-381. 
 	# Without loss of the admissibility property, h can return any other Fq-point on Eb in the case s1s2 == 0 (see [1, Section 4])
 	if den == 0:
 		X = 0; Y = 1; Z = 0
