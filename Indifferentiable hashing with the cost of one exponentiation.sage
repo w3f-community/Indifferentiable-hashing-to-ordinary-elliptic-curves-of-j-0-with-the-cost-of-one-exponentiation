@@ -7,8 +7,26 @@ import hashlib
 import random
 import string
 
-
+NUMBER_TEST_HASHES = 100
 ##########################################################################################################################
+
+# generates a random string, computes its hash and makes sure that the resulting point resides on the given curve.
+# 
+def hash_random_point_to_curve(ec_with_0_j_inv):
+        symbols = string.ascii_letters + string.digits
+        length = random.randint(0,50)
+        s = ''.join( random.choices(symbols, k=length) )
+        X,Y,Z = H(s)
+        assert(ec_with_0_j_inv(X,Y,Z)) #make sure the resulting point resides on the curve
+        print( f"\nH({s}): S^* → E   =   ({X} : {Y} : {Z})   =   {ec_with_0_j_inv(X,Y,Z)}\n" )
+
+
+#given a constant b and finite field Fq it compute hashes of several random string into E(Fq): y^2= x^3+b make sure the results residing on the curve
+def test_several_hashes(Fq, b, number_of_attemps):
+        Eb = EllipticCurve(Fq, [0,b])
+        print(f"testing hashing to {Eb}")
+        for i in range(0,number_of_attemps):
+                hash_random_point_to_curve(Eb)
 
 
 # We will deal with an ordinary elliptic curve Eb: y^2 = x^3 + b (of j-invariant 0) over a finite field Fq.
@@ -23,6 +41,8 @@ b = 1
 X0 = 0x8848defe740a67c8fc6225bf87ff5485951e2caa9d41bb188282c8bd37cb5cd5481512ffcd394eeab9b16eb21be9ef
 Y0 = 0x1914a69c5102eff1f674f5d30afeec4bd7fb348ca3e52d96d182ad44fb82305c2fe3d3634a9591afd82de55559c8ea6
 Z0 = 1
+print(u)
+test_several_hashes(Fq,b,NUMBER_TEST_HASHES)
 
 # Parameters for BLS12-381 curve (from https://hackmd.io/@benjaminion/bls12-381):
 u = -0xd201000000010000
@@ -31,7 +51,9 @@ q = ((u - 1)^2 * l) // 3 + u	# q mod 27 = 10
 b = 4
 X0 = 4
 Y0 = 0xa989badd40d6212b33cffc3f3763e9bc760f988c9926b26da9dd85e928483446346b8ed00e1de5d5ea93e354abe706c
-Z0 = 1 
+Z0 = 1
+print(u)
+test_several_hashes(Fq,b,NUMBER_TEST_HASHES)
 
 # Parameters for BLS12-383 curve (from https://gitlab.inria.fr/tnfs-alpha/alpha/-/blob/master/sage/tnfs/param/testvector_sparseseed.py): 
 u = 2^64 + 2^51 + 2^24 + 2^12 + 2^9
@@ -41,13 +63,17 @@ b = 4
 X0 = 0
 Y0 = 1
 Z0 = 0
+print(u)
+test_several_hashes(Fq,b,NUMBER_TEST_HASHES)
 
 # Parameters for a sextic Fq-twist of BN-224 curve (from https://www.iso.org/obp/ui/#iso:std:iso-iec:15946:-5:ed-3:v1:en):
 q = 0xfffffffffff107288ec29e602c4520db42180823bb907d1287127833		# q mod 9 = 4
 b = 1
 X0 = 0
 Y0 = 1
-Z0 = 0 
+Z0 = 0
+test_several_hashes(Fq,b,NUMBER_TEST_HASHES)
+
 # This twist is meaningless for cryptography. It is included as a testing example to cover the remaining case q mod 9 = 4.
 # I did not find BLS12 curves for which the given case occurs. At the same time, BN curves (unlike their twists) are of prime order, 
 # hence for them the new hash function is never relevant.
@@ -289,10 +315,5 @@ def H(s):
 ##########################################################################################################################
 
 
-# Main 
-symbols = string.ascii_letters + string.digits
-length = random.randint(0,50)
-s = ''.join( random.choices(symbols, k=length) )
-Eb = EllipticCurve(Fq, [0,b])
-X,Y,Z = H(s)
-print( f"\nH({s})   =   ({X} : {Y} : {Z})   =   {Eb(X,Y,Z)}\n" ) 
+
+
