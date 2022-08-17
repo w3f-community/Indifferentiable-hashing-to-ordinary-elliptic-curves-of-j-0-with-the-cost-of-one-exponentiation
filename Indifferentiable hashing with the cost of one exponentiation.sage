@@ -7,84 +7,6 @@ import hashlib
 import random
 import string
 
-
-##########################################################################################################################
-
-
-# We will deal with an ordinary elliptic curve Eb: y^2 = x^3 + b (of j-invariant 0) over a finite field Fq.
-# Suppose that the order q = 1 (mod 3), but q != 1 (mod 27). Besides, b is assumed to be a quadratic residue in Fq.
-# Consider some pairing-friendly curves popular at the moment:
-
-# Parameters for BLS12-377 curve (from https://eips.ethereum.org/EIPS/eip-2539):
-u = 9586122913090633729
-l = u^4 - u^2 + 1
-q = ((u - 1)^2 * l) // 3 + u	# q mod 9 = 7
-b = 1  
-X0 = 0x8848defe740a67c8fc6225bf87ff5485951e2caa9d41bb188282c8bd37cb5cd5481512ffcd394eeab9b16eb21be9ef
-Y0 = 0x1914a69c5102eff1f674f5d30afeec4bd7fb348ca3e52d96d182ad44fb82305c2fe3d3634a9591afd82de55559c8ea6
-Z0 = 1
-
-# Parameters for BLS12-381 curve (from https://hackmd.io/@benjaminion/bls12-381):
-u = -0xd201000000010000
-l = u^4 - u^2 + 1
-q = ((u - 1)^2 * l) // 3 + u	# q mod 27 = 10
-b = 4
-X0 = 4
-Y0 = 0xa989badd40d6212b33cffc3f3763e9bc760f988c9926b26da9dd85e928483446346b8ed00e1de5d5ea93e354abe706c
-Z0 = 1 
-
-# Parameters for BLS12-383 curve (from https://gitlab.inria.fr/tnfs-alpha/alpha/-/blob/master/sage/tnfs/param/testvector_sparseseed.py): 
-u = 2^64 + 2^51 + 2^24 + 2^12 + 2^9
-l = u^4 - u^2 + 1
-q = ((u - 1)^2 * l) // 3 + u	# q mod 27 = 19
-b = 4
-X0 = 0
-Y0 = 1
-Z0 = 0
-
-# Parameters for a sextic Fq-twist of BN-224 curve (from https://www.iso.org/obp/ui/#iso:std:iso-iec:15946:-5:ed-3:v1:en):
-q = 0xfffffffffff107288ec29e602c4520db42180823bb907d1287127833		# q mod 9 = 4
-b = 1
-X0 = 0
-Y0 = 1
-Z0 = 0 
-# This twist is meaningless for cryptography. It is included as a testing example to cover the remaining case q mod 9 = 4.
-# I did not find BLS12 curves for which the given case occurs. At the same time, BN curves (unlike their twists) are of prime order, 
-# hence for them the new hash function is never relevant.
-
-   
-##########################################################################################################################
-
-
-# Precomputations and checking conditions
-assert( log(q,2).n() <= 383 )		# This bound is used below for indifferentiability of the hash function eta(s)
-assert( q.is_prime_power() ) 
-r = q % 27
-assert(r != 1)
-assert(r % 3 == 1)
-Fq = GF(q)
-
-w = Fq(1).nth_root(3)
-assert(w != 1)   # w is a primitive 3rd root of unity
-w2 = w^2
-b = Fq(b)
-assert( b.is_square() )
-sb = b.nth_root(2)   
-X0 = Fq(X0); Y0 = Fq(Y0); Z0 = Fq(Z0)
-assert(Y0^2*Z0 == X0^3 + b*Z0^3)
-
-if r % 9 == 1:
-	m = (q - r) // 27
-	z = w.nth_root(3)   # z (i.e., zeta from [1, Section 3]) is a primitive 9th root of unity
-	z2 = z^2
-	c = z	
-else:
-	r = r % 9
-	m = (q - r) // 9
-	c = w
-# In both cases, c is a cubic non-residue in Fq
-
-
 ##########################################################################################################################
 
   
@@ -289,10 +211,90 @@ def H(s):
 ##########################################################################################################################
 
 
-# Main 
-symbols = string.ascii_letters + string.digits
-length = random.randint(0,50)
-s = ''.join( random.choices(symbols, k=length) )
-Eb = EllipticCurve(Fq, [0,b])
-X,Y,Z = H(s)
-print( f"\nH({s})   =   ({X} : {Y} : {Z})   =   {Eb(X,Y,Z)}\n" ) 
+# Main
+def main ():
+        ##########################################################################################################################
+
+
+        # We will deal with an ordinary elliptic curve Eb: y^2 = x^3 + b (of j-invariant 0) over a finite field Fq.
+        # Suppose that the order q = 1 (mod 3), but q != 1 (mod 27). Besides, b is assumed to be a quadratic residue in Fq.
+        # Consider some pairing-friendly curves popular at the moment:
+
+        # Parameters for BLS12-377 curve (from https://eips.ethereum.org/EIPS/eip-2539):
+        u = 9586122913090633729
+        l = u^4 - u^2 + 1
+        q = ((u - 1)^2 * l) // 3 + u	# q mod 9 = 7
+        b = 1  
+        X0 = 0x8848defe740a67c8fc6225bf87ff5485951e2caa9d41bb188282c8bd37cb5cd5481512ffcd394eeab9b16eb21be9ef
+        Y0 = 0x1914a69c5102eff1f674f5d30afeec4bd7fb348ca3e52d96d182ad44fb82305c2fe3d3634a9591afd82de55559c8ea6
+        Z0 = 1
+
+        # Parameters for BLS12-381 curve (from https://hackmd.io/@benjaminion/bls12-381):
+        u = -0xd201000000010000
+        l = u^4 - u^2 + 1
+        q = ((u - 1)^2 * l) // 3 + u	# q mod 27 = 10
+        b = 4
+        X0 = 4
+        Y0 = 0xa989badd40d6212b33cffc3f3763e9bc760f988c9926b26da9dd85e928483446346b8ed00e1de5d5ea93e354abe706c
+        Z0 = 1 
+
+        # Parameters for BLS12-383 curve (from https://gitlab.inria.fr/tnfs-alpha/alpha/-/blob/master/sage/tnfs/param/testvector_sparseseed.py): 
+        u = 2^64 + 2^51 + 2^24 + 2^12 + 2^9
+        l = u^4 - u^2 + 1
+        q = ((u - 1)^2 * l) // 3 + u	# q mod 27 = 19
+        b = 4
+        X0 = 0
+        Y0 = 1
+        Z0 = 0
+
+        # Parameters for a sextic Fq-twist of BN-224 curve (from https://www.iso.org/obp/ui/#iso:std:iso-iec:15946:-5:ed-3:v1:en):
+        q = 0xfffffffffff107288ec29e602c4520db42180823bb907d1287127833		# q mod 9 = 4
+        b = 1
+        X0 = 0
+        Y0 = 1
+        Z0 = 0 
+        # This twist is meaningless for cryptography. It is included as a testing example to cover the remaining case q mod 9 = 4.
+        # I did not find BLS12 curves for which the given case occurs. At the same time, BN curves (unlike their twists) are of prime order, 
+        # hence for them the new hash function is never relevant.
+
+
+        ##########################################################################################################################
+
+
+        # Precomputations and checking conditions
+        assert( log(q,2).n() <= 383 )		# This bound is used below for indifferentiability of the hash function eta(s)
+        assert( q.is_prime_power() ) 
+        r = q % 27
+        assert(r != 1)
+        assert(r % 3 == 1)
+        Fq = GF(q)
+
+        w = Fq(1).nth_root(3)
+        assert(w != 1)   # w is a primitive 3rd root of unity
+        w2 = w^2
+        b = Fq(b)
+        assert( b.is_square() )
+        sb = b.nth_root(2)   
+        X0 = Fq(X0); Y0 = Fq(Y0); Z0 = Fq(Z0)
+        assert(Y0^2*Z0 == X0^3 + b*Z0^3)
+
+        if r % 9 == 1:
+                m = (q - r) // 27
+                z = w.nth_root(3)   # z (i.e., zeta from [1, Section 3]) is a primitive 9th root of unity
+                z2 = z^2
+                c = z	
+        else:
+                r = r % 9
+                m = (q - r) // 9
+                c = w
+        # In both cases, c is a cubic non-residue in Fq
+
+        symbols = string.ascii_letters + string.digits
+        length = random.randint(0,50)
+        s = ''.join( random.choices(symbols, k=length) )
+        Eb = EllipticCurve(Fq, [0,b])
+        X,Y,Z = H(s)
+        print( f"\nH({s})   =   ({X} : {Y} : {Z})   =   {Eb(X,Y,Z)}\n" ) 
+
+if __name__ == "__main__":
+        main()
