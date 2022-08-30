@@ -261,33 +261,6 @@ def main ():
         ##########################################################################################################################
 
 
-        # Precomputations and checking conditions
-        assert( log(q,2).n() <= 383 )		# This bound is used below for indifferentiability of the hash function eta(s)
-        assert( q.is_prime_power() ) 
-        r = q % 27
-        assert(r != 1)
-        assert(r % 3 == 1)
-        Fq = GF(q)
-
-        w = Fq(1).nth_root(3)
-        assert(w != 1)   # w is a primitive 3rd root of unity
-        w2 = w^2
-        b = Fq(b)
-        assert( b.is_square() )
-        sb = b.nth_root(2)   
-        X0 = Fq(X0); Y0 = Fq(Y0); Z0 = Fq(Z0)
-        assert(Y0^2*Z0 == X0^3 + b*Z0^3)
-
-        if r % 9 == 1:
-                m = (q - r) // 27
-                z = w.nth_root(3)   # z (i.e., zeta from [1, Section 3]) is a primitive 9th root of unity
-                z2 = z^2
-                c = z	
-        else:
-                r = r % 9
-                m = (q - r) // 9
-                c = w
-        # In both cases, c is a cubic non-residue in Fq
 
         symbols = string.ascii_letters + string.digits
         length = random.randint(0,50)
@@ -296,5 +269,134 @@ def main ():
         X,Y,Z = H(r, Fq, w,w2, b,sb, m, z,z2, c, s, X0,Y0,Z0)
         print( f"\nH({s})   =   ({X} : {Y} : {Z})   =   {Eb(X,Y,Z)}\n" ) 
 
-if __name__ == "__main__":
-        main()
+import unittest
+class MapToCurveParams:
+        def __init__(self, q, b, X0,Y0,Z0):
+                # Precomputations and checking conditions
+                assert( log(q,2).n() <= 383 )		# This bound is used below for indifferentiability of the hash function eta(s)
+                assert( q.is_prime_power() ) 
+                r = q % 27
+                assert(r != 1)
+                assert(r % 3 == 1)
+                Fq = GF(q)
+
+                w = Fq(1).nth_root(3)
+                assert(w != 1)   # w is a primitive 3rd root of unity
+                w2 = w^2
+                b = Fq(b)
+                assert( b.is_square() )
+                sb = b.nth_root(2)   
+                X0 = Fq(X0); Y0 = Fq(Y0); Z0 = Fq(Z0)
+                assert(Y0^2*Z0 == X0^3 + b*Z0^3)
+
+                if r % 9 == 1:
+                        m = (q - r) // 27
+                        z = w.nth_root(3)   # z (i.e., zeta from [1, Section 3]) is a primitive 9th root of unity
+                        c = z	
+                else:
+                        r = r % 9
+                        m = (q - r) // 9
+                        c = w
+                        z = 0 # we set it to a dummy value because it is not used in this case.
+
+                z2 = z^2
+
+                # In both cases, c is a cubic non-residue in Fq
+                self.r = r
+                self.Fq = Fq
+                self.w = w
+                self.w2 = w2
+                self.b = b
+                self.sb = sb
+                self.m = m
+                self.z = z
+                self.z2 = z2
+                self.c = c
+                self.X0 = X0
+                self.Y0 = Y0
+                self.Z0 = Z0
+                self.ec_with_0_j_inv = self.generate_elliptic_curve()
+                
+        def generate_elliptic_curve(self):
+                return EllipticCurve(self.Fq, [0,self.b])
+                
+        
+class TestIndiffJInvJ0Hash(unittest.TestCase):
+        def setUp(self):
+                self.NUMBER_TEST_HASHES = 10
+
+        # generates a random string, computes its hash and makes sure that the resulting point resides on the given curve.
+        # 
+        def hash_random_point_to_curve(self, map_to_curve_params):
+                m2c = map_to_curve_params
+                symbols = string.ascii_letters + string.digits
+                length = random.randint(0,50)
+                s = ''.join( random.choices(symbols, k=length) )
+                X,Y,Z = H(m2c.r, m2c.Fq, m2c.w, m2c.w2, m2c.b, m2c.sb, m2c.m, m2c.z, m2c.z2, m2c.c, s, m2c.X0, m2c.Y0, m2c.Z0)
+                assert(m2c.ec_with_0_j_inv(X,Y,Z)) #make sure the resulting point resides on the curve
+                print( f"\nH({s}): S^* → E   =   ({X} : {Y} : {Z})   =   {m2c.ec_with_0_j_inv(X,Y,Z)}\n" )
+
+        #given a constant b and finite field Fq it compute hashes of several random string into E(Fq): y^2= x^3+b make sure the results residing on the curve
+        def compute_and_verify_several_hashes(self, map_to_curve_params):
+                print(f"testing hashing to {map_to_curve_params.ec_with_0_j_inv}")
+                for i in range(0,self.NUMBER_TEST_HASHES):
+                        self.hash_random_point_to_curve(map_to_curve_params)
+
+
+        def generate_bls12_params(self, u, b, X0, Y0, Z0):
+                # Precomputations and checking conditions
+                # assert( log(q,2).n() <= 383 )		# This bound is used below for indifferentiability of the hash function eta(s)
+                # assert( q.is_prime_power() ) 
+                l = u^4 - u^2 + 1
+                q = ((u - 1)^2 * l) // 3 + u	# q mod 9 = 7
+
+                return MapToCurveParams(q, b, X0, Y0, Z0)
+
+        def test_bls12_377(self):
+                # Parameters for BLS12-377 curve (from https://eips.ethereum.org/EIPS/eip-2539):
+                u = 9586122913090633729
+                X0 = 0x8848defe740a67c8fc6225bf87ff5485951e2caa9d41bb188282c8bd37cb5cd5481512ffcd394eeab9b16eb21be9ef
+                Y0 = 0x1914a69c5102eff1f674f5d30afeec4bd7fb348ca3e52d96d182ad44fb82305c2fe3d3634a9591afd82de55559c8ea6
+                Z0 = 1
+                b = 1
+
+                self.compute_and_verify_several_hashes(self.generate_bls12_params(u, b, X0, Y0, Z0))
+
+
+        def test_bls12_381(self):
+                #Parameters for BLS12-381 curve (from https://hackmd.io/@benjaminion/bls12-381):
+                u = -0xd201000000010000
+                b = 4
+                X0 = 4
+                Y0 = 0xa989badd40d6212b33cffc3f3763e9bc760f988c9926b26da9dd85e928483446346b8ed00e1de5d5ea93e354abe706c
+                Z0 = 1
+
+                self.compute_and_verify_several_hashes(self.generate_bls12_params(u, b, X0, Y0, Z0))
+
+        def test_bls12_383(self):
+                # Parameters for BLS12-383 curve (from https://gitlab.inria.fr/tnfs-alpha/alpha/-/blob/master/sage/tnfs/param/testvector_sparseseed.py): 
+                u = 2^64 + 2^51 + 2^24 + 2^12 + 2^9
+                b = 4
+                X0 = 0
+                Y0 = 1
+                Z0 = 0
+
+                self.compute_and_verify_several_hashes(self.generate_bls12_params(u, b, X0, Y0, Z0))
+
+
+        def test_example_curve_q_mod_9_eq_4(self):        
+                # Parameters for a sextic Fq-twist of BN-224 curve (from https://www.iso.org/obp/ui/#iso:std:iso-iec:15946:-5:ed-3:v1:en):
+                q = 0xfffffffffff107288ec29e602c4520db42180823bb907d1287127833		# q mod 9 = 4
+                b = 1
+                X0 = 0
+                Y0 = 1
+                Z0 = 0
+
+                # This twist is meaningless for cryptography. It is included as a testing example to cover the remaining case q mod 9 = 4.
+                # I did not find BLS12 curves for which the given case occurs. At the same time, BN curves (unlike their twists) are of prime order, 
+                # hence for them the new hash function is never relevant.
+                self.compute_and_verify_several_hashes(MapToCurveParams(q, b, X0, Y0, Z0))
+
+
+if __name__ == '__main__':                        
+        unittest.main()                               
