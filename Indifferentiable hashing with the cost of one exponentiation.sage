@@ -401,6 +401,33 @@ class TestIndiffJInvJ0Hash(unittest.TestCase):
                 # hence for them the new hash function is never relevant.
                 self.compute_and_verify_several_hashes(MapToCurveParams(q, b, X0, Y0, Z0))
 
+        def test_bls12_381_test_vector(self):
+                u = -0xd201000000010000
+                b = 4
+                X0 = 4
+                Y0 = 0xa989badd40d6212b33cffc3f3763e9bc760f988c9926b26da9dd85e928483446346b8ed00e1de5d5ea93e354abe706c
+                Z0 = 1
+
+                m2c = self.generate_bls12_params(u, b, X0, Y0, Z0)
+                from test_vectors import bls12_381_test_vector
+                for i in range(0, len(bls12_381_test_vector)):
+                             X,Y,Z=H(m2c.r, m2c.Fq, m2c.w, m2c.w2, m2c.b, m2c.sb, m2c.m, m2c.z, m2c.z2, m2c.c, str(i), m2c.X0, m2c.Y0, m2c.Z0)
+                             assert(X/Z == bls12_381_test_vector[i*2] and Y/Z == bls12_381_test_vector[i*2+1])
+
+        def test_bls12_377_test_vector(self):
+                # Parameters for BLS12-377 curve (from https://eips.ethereum.org/EIPS/eip-2539):
+                u = 9586122913090633729
+                X0 = 0x8848defe740a67c8fc6225bf87ff5485951e2caa9d41bb188282c8bd37cb5cd5481512ffcd394eeab9b16eb21be9ef
+                Y0 = 0x1914a69c5102eff1f674f5d30afeec4bd7fb348ca3e52d96d182ad44fb82305c2fe3d3634a9591afd82de55559c8ea6
+                Z0 = 1
+                b = 1
+                
+                m2c = self.generate_bls12_params(u, b, X0, Y0, Z0)
+                from test_vectors import bls12_377_test_vector
+                for i in range(0, len(bls12_377_test_vector)/2):
+                             X,Y,Z=H(m2c.r, m2c.Fq, m2c.w, m2c.w2, m2c.b, m2c.sb, m2c.m, m2c.z, m2c.z2, m2c.c, str(i), m2c.X0, m2c.Y0, m2c.Z0)
+                             assert(X/Z == bls12_377_test_vector[i*2] and Y/Z == bls12_377_test_vector[i*2+1])
+
 
 if __name__ == '__main__':                        
         unittest.main()                               
