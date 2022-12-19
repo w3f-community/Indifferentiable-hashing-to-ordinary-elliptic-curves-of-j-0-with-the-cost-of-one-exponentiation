@@ -6,3 +6,27 @@ To run the test use.
 ```
 $ sage Indifferentiable\ hashing\ with\ the\ cost\ of\ one\ exponentiation.sage 
 ```
+
+### To translate rust test vectors to sage test vectors
+save `test_vectors.rs` to `test_vector.py` remove boilerplate code.
+
+Add definitions:
+
+```
+from sage.rings.finite_rings.finite_field_constructor import GF
+
+Fq381= GF(4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787)
+bls12_381_test_vector = [Fq381(0)]*200
+
+Fq377 = GF(0x01ae3a4617c510eac63b05c06ca1493b1a22d9f300f5138f1ef3622fba094800170b5d44300000008508c00000000001)
+bls12_377_test_vector = [Fq377(0)]*200
+```
+
+and run
+
+```
+(query-replace-regexp ".*a\\[\\([0-9]*\\)\\] = field_new!(Fq381, \"\\([0-9]*\\)\");" "bls12_381_test_vector[\\1] = Fq381(\\2);")
+(query-replace-regexp ".*a\\[\\([0-9]*\\)\\] = field_new!(Fq377, \"\\([0-9]*\\)\");" "bls12_377_test_vector[\\1] = Fq377(\\2);")
+```
+
+in emacs.
