@@ -22,11 +22,18 @@ Fq377 = GF(0x01ae3a4617c510eac63b05c06ca1493b1a22d9f300f5138f1ef3622fba094800170
 bls12_377_test_vector = [Fq377(0)]*200
 ```
 
-and run
+First schroll down to BLS12-377 test vectors and run
 
 ```
-(query-replace-regexp ".*a\\[\\([0-9]*\\)\\] = field_new!(Fq381, \"\\([0-9]*\\)\");" "bls12_381_test_vector[\\1] = Fq381(\\2);")
-(query-replace-regexp ".*a\\[\\([0-9]*\\)\\] = field_new!(Fq377, \"\\([0-9]*\\)\");" "bls12_377_test_vector[\\1] = Fq377(\\2);")
+(query-replace-regexp ".*a\\[\\([0-9]*\\)\\] = MontFp!(Fq377, \"\\([0-9]*\\)\");" "bls12_377_test_vector[\\1] = Fq377(\\2);")
+```
+
+and then come to the begining of the file and run.
+
+```
+(query-replace-regexp ".*a\\[\\([0-9]*\\)\\] = MontFp!(\"\\([0-9]*\\)\");" "bls12_381_test_vector[\\1] = Fq381(\\2);")
 ```
 
 in emacs.
+
+and then run the tests as explained above.

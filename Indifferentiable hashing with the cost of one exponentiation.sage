@@ -410,9 +410,9 @@ class TestIndiffJInvJ0Hash(unittest.TestCase):
 
                 m2c = self.generate_bls12_params(u, b, X0, Y0, Z0)
                 from test_vectors import bls12_381_test_vector
-                for i in range(0, len(bls12_381_test_vector)):
-                             X,Y,Z=H(m2c.r, m2c.Fq, m2c.w, m2c.w2, m2c.b, m2c.sb, m2c.m, m2c.z, m2c.z2, m2c.c, str(i), m2c.X0, m2c.Y0, m2c.Z0)
-                             assert(X/Z == bls12_381_test_vector[i*2] and Y/Z == bls12_381_test_vector[i*2+1])
+                for i in range(0, len(bls12_381_test_vector)/2):
+                        X,Y,Z=H(m2c.r, m2c.Fq, m2c.w, m2c.w2, m2c.b, m2c.sb, m2c.m, m2c.z, m2c.z2, m2c.c, str(i), m2c.X0, m2c.Y0, m2c.Z0)
+                        assert(X/Z == bls12_381_test_vector[i*2] and Y/Z == bls12_381_test_vector[i*2+1])
 
         def test_bls12_377_test_vector(self):
                 # Parameters for BLS12-377 curve (from https://eips.ethereum.org/EIPS/eip-2539):
@@ -425,8 +425,8 @@ class TestIndiffJInvJ0Hash(unittest.TestCase):
                 m2c = self.generate_bls12_params(u, b, X0, Y0, Z0)
                 from test_vectors import bls12_377_test_vector
                 for i in range(0, len(bls12_377_test_vector)/2):
-                             X,Y,Z=H(m2c.r, m2c.Fq, m2c.w, m2c.w2, m2c.b, m2c.sb, m2c.m, m2c.z, m2c.z2, m2c.c, str(i), m2c.X0, m2c.Y0, m2c.Z0)
-                             assert(X/Z == bls12_377_test_vector[i*2] and Y/Z == bls12_377_test_vector[i*2+1])
+                        X,Y,Z=H(m2c.r, m2c.Fq, m2c.w, m2c.w2, m2c.b, m2c.sb, m2c.m, m2c.z, m2c.z2, m2c.c, str(i), m2c.X0, m2c.Y0, m2c.Z0)
+                        assert(X/Z == bls12_377_test_vector[i*2] and Y/Z == bls12_377_test_vector[i*2+1])
 
 
 if __name__ == '__main__':                        
